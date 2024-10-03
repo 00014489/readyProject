@@ -1,0 +1,17 @@
+[Unit]
+Description=Test deployement bot
+After=syslog.target
+After=network.target
+
+[Service]
+Restart=always
+RestartSec=2s
+Type=simple
+User=th1nker
+Group=th1nker
+MemoryLimit=14G
+WorkingDirectory=/home/th1nker/Projects/durdona/
+ExecStart=/home/th1nker/Projects/durdona/myenv/bin/python /home/th1nker/Projects/durdona/main.py
+
+[Install]
+WantedBy=multi-user.target
