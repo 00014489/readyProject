@@ -5,7 +5,7 @@ import logging
 # Async connection creation for psycopg3
 async def get_db_connection():
     conn = await psycopg.AsyncConnection.connect(
-        user="Th1nkeR",
+        user="postgres",
         password="Th1nkeRLDMUsmonov",
         host="localhost",
         port="5432",
