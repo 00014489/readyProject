@@ -5,11 +5,11 @@ import logging
 # Async connection creation for psycopg3
 async def get_db_connection():
     conn = await psycopg.AsyncConnection.connect(
-        user="postgres",
-        password="0549",
+        user="Th1nkeR",
+        password="Th1nkeRLDMUsmonov",
         host="localhost",
         port="5432",
-        dbname="music_saver"
+        dbname="postgres"
     )
     
     # Set client encoding to UTF-8
