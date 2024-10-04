@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 from app.handlers import router
-from config.config import TOKEN
+# from config.config import TOKEN
 from middlewares.middlewares import AudioFileMiddleware
 
 # Initialize logging
