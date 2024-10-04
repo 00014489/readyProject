@@ -49,9 +49,9 @@ async def cmd_start(message: Message):
      # Path to your image
     photo = FSInputFile("./images/photo_2024-09-13_10-23-12.jpg")
     await message.answer_photo(photo, caption=(
-        "Welcome to \{ halo nom topmadim \} bot\n\n"
+        "Welcome to MinusGolos bot\n\n"
         "This bot can get audio file and return minus of sended audio\n\n"
-        "U can choose returning with 0% vocal or 15%\n\n"
+        f"U can choose returning with 0% vocal or 15% or 50%\n\n"
         "Great point, Day by day the bot will become more faster"))
 
 
@@ -249,8 +249,9 @@ async def cmd_help(message: Message):
         photo,
         caption=(
             f"Send song and get a minus of song\n\n"
-            f"0% button - it is button for getting the 0% vocal audio file"
-            f"15% button - it is button for getting the audio with 15% vocal volume\n\n"
+            f"0% button - it is button for getting the 0% vocal audio file\n"
+            f"15% button - it is button for getting the audio with 15% vocal volume. It is for better quality\n"
+            f"50% button - it is button for getting the audio with 50% vocal volume. It is for people who loves the bass or minus of track\n\n"
             "If u get error that process is too long please try again\n\n"
             "Do not forget. Day by day the bot will become more and more faster\n"
             "U can check it by practicing ...\n\n"

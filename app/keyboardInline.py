@@ -16,7 +16,7 @@ async def percent_choose(file_id: str):
     keyboard.add(
         InlineKeyboardButton(text="0%", callback_data=f"mix_vocals:{id}:0"),
         InlineKeyboardButton(text="15%", callback_data=f"mix_vocals:{id}:15"),
-        InlineKeyboardButton(text="35%", callback_data=f"mix_vocals:{id}:35")
+        InlineKeyboardButton(text="50%", callback_data=f"mix_vocals:{id}:50")
     )
 
     # Adjust the buttons in rows of 2
