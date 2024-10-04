@@ -6,22 +6,14 @@ from aiogram import Bot, Dispatcher
 from app.handlers import router
 from middlewares.middlewares import AudioFileMiddleware
 
-# Load environment variables from .env file
-load_dotenv()
-
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 
-# Get the token
+load_dotenv()
 TOKEN = os.getenv('TOKEN')
-
-# Check if the token is loaded
-if TOKEN is None:
-    raise ValueError("No token found. Please set the TOKEN environment variable.")
-
 # Initialize Bot and Dispatcher
-bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)  # Pass the bot instance to the Dispatcher
+bot = Bot(token = TOKEN)
+dp = Dispatcher()
 
 async def main():
     # Include router with your handlers
@@ -29,7 +21,7 @@ async def main():
     dp.update.middleware(AudioFileMiddleware())  # update
     try:
         # Start polling
-        await dp.start_polling()
+        await dp.start_polling(bot)
     finally:
         # Ensure the bot's session is closed on shutdown
         await bot.session.close()
