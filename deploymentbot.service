@@ -7,11 +7,11 @@ After=network.target
 Restart=always
 RestartSec=2s
 Type=simple
-User=th1nker
-Group=th1nker
+User=minusGolosAdmin
+Group=minusGolosAdmin
 MemoryLimit=14G
-WorkingDirectory=/home/th1nker/Projects/durdona/
-ExecStart=/home/th1nker/Projects/durdona/myenv/bin/python /home/th1nker/Projects/durdona/main.py
+WorkingDirectory=/home/minusGolosAdmin/readyProject
+ExecStart=/home/minusGolosAdmin/readyProject/myenv38/bin/python /home/minusGolosAdmin/readyProject/main.py
 
 [Install]
 WantedBy=multi-user.target

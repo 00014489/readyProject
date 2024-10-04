@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import os
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 from app.handlers import router
 from config.config import TOKEN
@@ -9,11 +11,12 @@ from middlewares.middlewares import AudioFileMiddleware
 logging.basicConfig(level=logging.INFO)
 
 # Initialize Bot and Dispatcher
-bot = Bot(token=TOKEN)
+bot = Bot(token=os.getenv('TOKEN'))
 dp = Dispatcher()
 
 async def main():
     # Include router with your handlers
+    load_dotenv()
     dp.include_router(router)
     dp.update.middleware(AudioFileMiddleware())  # update
     try:
