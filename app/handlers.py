@@ -3,10 +3,11 @@ from aiogram import Router, F, Bot
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, FSInputFile
 import data.connection as dataPostgres
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import CallbackQuery
 from aiogram.exceptions import TelegramAPIError
 import data.connection as dataPostgres
 import logging
+import gc
 import re
 import shutil  # For deleting directories and their content
 from collections import deque
@@ -15,7 +16,7 @@ from run import process_audio_file
 
 router = Router()
 audio_queue = deque()
-processing_semaphore = asyncio.Semaphore(1)  # Limit to 3 concurrent tasks
+processing_semaphore = asyncio.Semaphore(3)  # Limit to 3 concurrent tasks
 processing = False
 
 async def track_message(message: Message, percentage: int = None):
@@ -49,9 +50,9 @@ async def cmd_start(message: Message):
      # Path to your image
     photo = FSInputFile("./images/photo_2024-09-13_10-23-12.jpg")
     await message.answer_photo(photo, caption=(
-        "Welcome to MinusGolos bot\n\n"
+        "Welcome to \{ halo nom topmadim \} bot\n\n"
         "This bot can get audio file and return minus of sended audio\n\n"
-        f"U can choose returning with 0% vocal or 15% or 50%\n\n"
+        "U can choose returning with 0% vocal or 15%\n\n"
         "Great point, Day by day the bot will become more faster"))
 
 
@@ -71,16 +72,8 @@ async def handle_playlist_move(callback: CallbackQuery, bot: Bot):
         from_chat_id, message_id = await dataPostgres.get_chat_and_message_id_by_id(id, vocal_percentage)
         await forward_message_to_user(bot, from_chat_id, message_id, chat_id)
     else:
-        # save_directory = './inputSongs'
-        # os.makedirs(save_directory, exist_ok=True)
-        # file_name = await dataPostgres.get_name_by_id(file_id)
-        # # Define the full path where the audio file will be saved
-        # file_path = os.path.join(save_directory, format_column_namesForDatabase(file_name))
 
-        # audio_queue.append((bot, callback.message, file_id, file_name, file_path, chat_id))
-        # await process_audio_queue(vocal_percentage)
-
-        save_directory = f'./inputSongs{vocal_percentage}'
+        save_directory = f'./inputSongs{vocal_percentage}:{id_input}'
         os.makedirs(save_directory, exist_ok=True)
 
         file_name = await dataPostgres.get_name_by_id(file_id)
@@ -88,76 +81,11 @@ async def handle_playlist_move(callback: CallbackQuery, bot: Bot):
         file_path = os.path.join(save_directory, format_column_namesForDatabase(file_name))
 
         # audio_queue.append((bot, callback.message, file_id, file_name, file_path, chat_id))
-        audio_queue.append((bot, callback.message, file_id, file_name, file_path, chat_id, vocal_percentage))
+        audio_queue.append((bot, callback.message, file_id, file_name, file_path, chat_id, vocal_percentage, id_input))
         await process_audio_queue()
 
     await bot.delete_message(chat_id, processing_message.message_id)
         
-
-# Process audio files from the queue
-# async def process_audio_queue(vocal_percentage):
-#     global processing
-
-#     if processing:
-#         return  # Prevent multiple simultaneous process executions
-
-#     processing = True
-
-#     while audio_queue:
-#         task = audio_queue.popleft()
-#         bot, message, file_id, file_name, file_path, user_id = task
-
-#         async with processing_semaphore:
-#             try:
-#                 # Download the file
-#                 file = await bot.get_file(file_id)
-#                 await asyncio.wait_for(bot.download_file(file.file_path, destination=file_path), timeout=600)
-#                 logging.info(f"File {file_name} downloaded successfully to {file_path}")
-
-#                 # Process the audio file
-#                 processed_audio_file, output_folder = await process_audio_file(file_path, vocal_percentage)
-#                 if processed_audio_file is None:
-#                     raise ValueError("Processed audio file is None. Ensure the processing function returns a valid file path.")
-
-#                 # Send the processed file
-#                 sendFile = await asyncio.wait_for(bot.send_audio(chat_id=user_id, audio=FSInputFile(processed_audio_file)), timeout=240)
-#                 id = await track_message(sendFile, vocal_percentage)
-                
-#                 # Insert file into the database
-#                 await dataPostgres.update_out_id_by_percent(file_id, id, vocal_percentage)
-
-#                 # Cleanup specific files/directories related to this process
-#                 try:
-#                     # Remove only the specific processed file
-#                     if os.path.exists(processed_audio_file):
-#                         os.remove(processed_audio_file)
-#                         logging.info(f"Deleted processed file: {processed_audio_file}")
-
-#                     # Remove the newly created output folder
-#                     if os.path.exists(output_folder):
-#                         shutil.rmtree(output_folder)
-#                         logging.info(f"Deleted output folder: {output_folder}")
-
-#                     # Optionally delete the original file if needed
-#                     if os.path.exists(file_path):
-#                         os.remove(file_path)
-#                         logging.info(f"Deleted original file: {file_path}")
-
-#                 except Exception as e:
-#                     logging.error(f"Error cleaning up files: {e}")
-
-#             except asyncio.TimeoutError:
-#                 logging.error("Processing the file took too long.")
-#                 await message.reply("Processing the file took too long. Please try again later.")
-#             except Exception as e:
-#                 logging.error(f"Error processing audio file: {e}", exc_info=True)
-#                 fail_add_message = f"Failed to process {file_name} due to an error: {str(e)}"
-#                 try:
-#                     await message.reply(fail_add_message)
-#                 except Exception as reply_error:
-#                     logging.error(f"Error sending failure message: {reply_error}")
-
-#     processing = False
 
 
 async def process_audio_queue():
@@ -170,21 +98,11 @@ async def process_audio_queue():
 
     while audio_queue:
         task = audio_queue.popleft()
-        bot, message, file_id, file_name, file_path, user_id, vocal_percentage = task
+        bot, message, file_id, file_name, file_path, user_id, vocal_percentage, id_input = task
 
         async with processing_semaphore:
             try:
-                
-                # Download the file
-                # file = await bot.get_file(file_id)
-                # await asyncio.wait_for(bot.download_file(file.file_path, destination=file_path), timeout=600)
-                # logging.info(f"File {file_name} downloaded successfully to {file_path}")
-
-                # # Process the audio file
-                # processed_audio_file, output_folder = await process_audio_file(file_path, vocal_percentage)
-                # if processed_audio_file is None:
-                #     raise ValueError("Processed audio file is None. Ensure the processing function returns a valid file path.")
-
+                # Download the audio file
                 file = await bot.get_file(file_id)
                 await asyncio.wait_for(bot.download_file(file.file_path, destination=file_path), timeout=600)
                 logging.info(f"File {file_name} downloaded successfully to {file_path}")
@@ -193,34 +111,26 @@ async def process_audio_queue():
                 logging.info(f"Processing audio file with vocal percentage: {vocal_percentage}%")
 
                 # Process the audio file
-                processed_audio_file, output_folder = await process_audio_file(file_path, vocal_percentage)
+                processed_audio_file, output_folder = await process_audio_file(file_path, vocal_percentage, id_input)
                 if processed_audio_file is None:
                     raise ValueError("Processed audio file is None. Ensure the processing function returns a valid file path.")
 
                 # Send the processed file
-                
                 sendFile = await asyncio.wait_for(bot.send_audio(chat_id=user_id, audio=FSInputFile(processed_audio_file)), timeout=240)
                 id = await track_message(sendFile, vocal_percentage)
-                
+
                 # Insert file into the database
                 await dataPostgres.update_out_id_by_percent(file_id, id, vocal_percentage)
 
-                # Cleanup specific files/directories related to this process
                 try:
-                    # # Remove only the specific processed file
-                    # if os.path.exists(processed_audio_file):
-                    #     os.remove(processed_audio_file)
-                    #     logging.info(f"Deleted processed file: {processed_audio_file}")
-
                     # Remove the newly created output folder
                     if os.path.exists(output_folder):
                         shutil.rmtree(output_folder)
                         logging.info(f"Deleted output folder: {output_folder}")
 
-                    # Optionally delete the original file if needed
-                    # if os.path.exists(file_path):
-                    #     os.remove(file_path)
-                    #     logging.info(f"Deleted original file: {file_path}")
+                    # Call garbage collection to free up memory
+                    gc.collect()  # Force garbage collection
+                    logging.info("Garbage collection executed.")
 
                 except Exception as cleanup_error:
                     logging.error(f"Error cleaning up files: {cleanup_error}")
@@ -239,7 +149,6 @@ async def process_audio_queue():
     processing = False
 
 
-
 @router.message(Command("help"))
 async def cmd_help(message: Message):
     photo = FSInputFile("./images/help.jpg")
@@ -249,9 +158,8 @@ async def cmd_help(message: Message):
         photo,
         caption=(
             f"Send song and get a minus of song\n\n"
-            f"0% button - it is button for getting the 0% vocal audio file\n"
-            f"15% button - it is button for getting the audio with 15% vocal volume. It is for better quality\n"
-            f"50% button - it is button for getting the audio with 50% vocal volume. It is for people who loves the bass or minus of track\n\n"
+            f"0% button - it is button for getting the 0% vocal audio file"
+            f"15% button - it is button for getting the audio with 15% vocal volume\n\n"
             "If u get error that process is too long please try again\n\n"
             "Do not forget. Day by day the bot will become more and more faster\n"
             "U can check it by practicing ...\n\n"
