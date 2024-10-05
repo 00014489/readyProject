@@ -158,9 +158,9 @@ async def cmd_help(message: Message):
         photo,
         caption=(
             f"Send song and get a minus of song\n\n"
-            f"0% button - it is button for getting the 0% vocal audio file"
-            f"15% button - it is button for getting the audio with 15% vocal volume for better quality"
-            f"50% button - it is button for getting the audio with 50% vocal volume for better melody of song"
+            f"0% button - it is button for getting the 0% vocal audio file\n"
+            f"15% button - it is button for getting the audio with 15% vocal volume for better quality\n"
+            f"50% button - it is button for getting the audio with 50% vocal volume for better melody of song\n\n"
             "If u get error that process is too long please try again\n\n"
             "Do not forget. Day by day the bot will become more and more faster\n"
             "U can check it by practicing ...\n\n"
