@@ -11,7 +11,7 @@ User=minusGolosAdmin
 Group=minusGolosAdmin
 MemoryLimit=14G
 WorkingDirectory=/home/minusGolosAdmin/readyProject
-ExecStart=/home/minusGolosAdmin/readyProject/myenv38/bin/python /home/minusGolosAdmin/readyProject/main.py
+ExecStart=/home/minusGolosAdmin/readyProject/myenv/bin/python /home/minusGolosAdmin/readyProject/main.py
 
 [Install]
 WantedBy=multi-user.target
