@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import shutil
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
 from app.handlers import router
@@ -38,7 +39,7 @@ def delete_input_songs_folders():
         if os.path.isdir(item) and item.startswith('inputSongs'):
             try:
                 # Remove the directory and all its contents
-                os.rmdir(item)  # Use shutil.rmtree(item) if you want to delete non-empty directories
+                shutil.rmtree(item)  # Delete the folder and its contents
                 logging.info(f"Deleted folder: {item}")
             except Exception as e:
                 logging.error(f"Failed to delete folder {item}: {e}")
