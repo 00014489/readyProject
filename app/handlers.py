@@ -29,7 +29,7 @@ async def track_message(message: Message, percentage: int = None):
 
 def format_column_namesForDatabase(input_string: str):
     base_name, extension = os.path.splitext(input_string)
-    cleaned_string = re.sub(r'[\'@()\-.]', '', base_name)
+    cleaned_string = re.sub(r'[\'@()\-.]!#$%^&*', '', base_name)
     formatted_name = cleaned_string.replace(' ', '_').lower()
     return f"{formatted_name}{extension}"
 
@@ -52,7 +52,7 @@ async def cmd_start(message: Message):
     await message.answer_photo(photo, caption=(
         "Welcome to MinusGolos bot\n\n"
         "This bot can get audio file and return minus of sended audio\n\n"
-        f"U can choose returning with 0% vocal or 15% or 50%\n\n"
+        f"U can choose returning with 0% vocal or 15% or 50%.\n\n"
         "Great point, Day by day the bot will become more faster"))
 
 
@@ -160,7 +160,7 @@ async def cmd_help(message: Message):
             f"Send song and get a minus of song\n\n"
             f"0% button - it is button for getting the 0% vocal audio file\n"
             f"15% button - it is button for getting the audio with 15% vocal volume for better quality\n"
-            f"50% button - it is button for getting the audio with 50% vocal volume for better melody of song\n\n"
+            f"50% button - it is button for getting the audio with 50% vocal volume for better melody\n"
             "If u get error that process is too long please try again\n\n"
             "Do not forget. Day by day the bot will become more and more faster\n"
             "U can check it by practicing ...\n\n"
