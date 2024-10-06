@@ -16,7 +16,7 @@ from run import process_audio_file
 
 router = Router()
 audio_queue = deque()
-processing_semaphore = asyncio.Semaphore(3)  # Limit to 3 concurrent tasks
+processing_semaphore = asyncio.Semaphore(2)  # Limit to 2 concurrent tasks
 processing = False
 
 async def track_message(message: Message, percentage: int = None):
