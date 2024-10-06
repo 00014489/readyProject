@@ -16,7 +16,7 @@ from run import process_audio_file
 
 router = Router()
 audio_queue = deque()
-processing_semaphore = asyncio.Semaphore(1)  # Limit to 2 concurrent tasks
+processing_semaphore = asyncio.Semaphore(1)  # Limit to 1 concurrent tasks
 processing = False
 
 async def track_message(message: Message, percentage: int = None):
@@ -129,7 +129,7 @@ async def process_audio_queue():
                         logging.info(f"Deleted output folder: {output_folder}")
 
                     # Call garbage collection to free up memory
-                    gc.collect()  # Force garbage collection
+                    # gc.collect()  # Force garbage collection
                     logging.info("Garbage collection executed.")
 
                 except Exception as cleanup_error:
