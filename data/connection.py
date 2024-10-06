@@ -1,6 +1,7 @@
 import psycopg
 from psycopg import sql
 import logging
+import psycopg2
 
 # Async connection creation for psycopg3
 async def get_db_connection():
@@ -15,6 +16,21 @@ async def get_db_connection():
     # Set client encoding to UTF-8
     async with conn.cursor() as cursor:
         await cursor.execute("SET client_encoding TO 'UTF8'")
+    
+    return conn
+
+def get_db_connection_sync():
+    conn = psycopg2.connect(
+        user="postgres",
+        password="0549",
+        host="localhost",
+        port="5432",
+        dbname="music_saver"
+    )
+    
+    # Set client encoding to UTF-8
+    with conn.cursor() as cursor:
+        cursor.execute("SET client_encoding TO 'UTF8'")
     
     return conn
 
@@ -98,6 +114,39 @@ async def get_message_id_by_id(record_id: int):
     finally:
         # Ensure the connection is closed
         await conn.close()
+
+async def get_id_by_message_id(record_id: int, vocal_percentage: int):
+    conn = await get_db_connection()  # Assuming you have get_db_connection() defined
+    try:
+        async with conn.cursor() as cur:
+            # Construct the table name dynamically based on vocal_percentage
+            table_name = f"out_{vocal_percentage}"
+
+            # Construct the SQL query dynamically
+            query = f"""
+                SELECT id
+                FROM {table_name}
+                WHERE message_id = %s;
+            """
+
+            # Execute the query
+            await cur.execute(query, (record_id,))
+            
+            result = await cur.fetchone()  # Fetch one result
+            if result:
+                message_id = result[0]  # Extract message_id from the result tuple
+                return message_id
+            else:
+                logging.info(f"No entry found for id: {record_id} in table: {table_name}")
+                return None
+    except Exception as e:
+        logging.error(f"Error retrieving message_id from {table_name}: {e}")
+        return None
+    finally:
+        # Ensure the connection is closed
+        await conn.close()
+
+        
 
 
 async def insert_into_input_file(file_id: str, file_name: str):
@@ -231,6 +280,30 @@ async def get_name_by_id(file_id: str) -> str:
         # Ensure the connection is closed
         await conn.close()
 
+def get_name_by_songId(id: int) -> str:
+    conn = get_db_connection_sync()
+    try:
+        with conn.cursor() as cur:
+            # Execute a query to fetch the file_name for the given file_id
+            query = """
+                SELECT file_name
+                FROM input_file
+                WHERE id = %s;
+            """
+            cur.execute(query, (id,))
+            
+            # Fetch the result
+            result = cur.fetchone()
+
+            # Return the file_name if found, or None if not found
+            return result[0] if result else None
+    except Exception as e:
+        logging.error(f"Error fetching file_name for file_id {id}: {e}")
+        return None  # Return None in case of any error
+    finally:
+        # Ensure the connection is closed
+        conn.close()
+
 async def insert_chat_and_message_id(chat_id: int, message_id: int, percentage: int):
     """
     Inserts chat_id and message_id into the dynamically selected table based on percentage 
@@ -258,29 +331,38 @@ async def insert_chat_and_message_id(chat_id: int, message_id: int, percentage: 
     finally:
         await conn.close()
 
+
+
 async def update_out_id_by_percent(file_id: str, out_id: int, percent: int):
-    # Determine the column name dynamically based on the percent (0 or 15)
+    connection = None
     out_column = f"out_{percent}_id"
-
-    # SQL query to update the specific out_id column based on file_id
-    query = f"""
-        UPDATE input_file
-        SET {out_column} = %s
-        WHERE file_id = %s;
-    """
-
-    conn = await get_db_connection()
     try:
-        async with conn.cursor() as cur:
-            # Execute the query, passing out_id and file_id
-            await cur.execute(query, (out_id, file_id))
-            await conn.commit()
-            logging.info(f"Successfully updated {out_column} for file_id {file_id}.")
-    except Exception as e:
-        logging.error(f"Error updating {out_column} for file_id {file_id}: {e}")
-    finally:
-        await conn.close()
+        # Establish the async connection to the database
+        connection = await get_db_connection()
 
+        # Use async context manager with the connection cursor
+        async with connection.cursor() as cursor:
+            # Define the SQL command to update the language_id
+            query = f"""
+                UPDATE input_file
+                SET {out_column} = %s
+                WHERE file_id = %s;
+            """
+            
+            # Execute the SQL command with parameters
+            await cursor.execute(query, (out_id, file_id))
+            
+            # Commit the transaction
+            await connection.commit()
+            print("Successfully updated {out_column} for file_id {file_id} value {out_id}.")
+
+    except (Exception, psycopg.Error) as error:
+        print("Error while updating:", error)
+    
+    finally:
+        if connection:
+            await connection.close()
+            print("PostgreSQL connection is closed")
 
 async def get_id_by_file_id(file_id: str):
     """
@@ -341,6 +423,71 @@ async def get_file_id_by_id(id: int):
         return None
     finally:
         await conn.close()
+
+def get_file_id_by_id_sync(id: int):
+    """
+    Retrieves the file_name from the table based on the given id.
+
+    :param id: The identifier to search for.
+    :return: The file_name associated with the given id, or None if not found.
+    """
+    query = """
+        SELECT file_id
+        FROM input_file
+        WHERE id = %s;
+    """
+    
+    conn = get_db_connection_sync()  # Synchronous connection to the database
+    try:
+        with conn.cursor() as cur:
+            logging.info(f"Executing query: {query} with id: {id}")
+            cur.execute(query, (id,))
+            result = cur.fetchone()  # Fetch the first matching result
+            
+            if result:
+                logging.info(f"Record found for id {id}: {result[0]}")
+                return result[0]  # Return the file_name
+            else:
+                logging.info(f"No record found for id: {id}.")
+                return None
+    except Exception as e:
+        logging.error(f"Error retrieving file_name for id {id}: {e}")
+        return None
+    finally:
+        conn.close()  # Ensure the connection is closed
+
+def get_file_name_by_id(id: int):
+    """
+    Retrieves the file_name from the table based on the given id.
+
+    :param id: The identifier to search for.
+    :return: The file_name associated with the given id, or None if not found.
+    """
+    query = """
+        SELECT file_name
+        FROM input_file
+        WHERE id = %s;
+    """
+    
+    conn = get_db_connection_sync()  # Synchronous connection to the database
+    try:
+        with conn.cursor() as cur:
+            logging.info(f"Executing query: {query} with id: {id}")
+            cur.execute(query, (id,))
+            result = cur.fetchone()  # Fetch the first matching result
+            
+            if result:
+                logging.info(f"Record found for id {id}: {result[0]}")
+                return result[0]  # Return the file_name
+            else:
+                logging.info(f"No record found for id: {id}.")
+                return None
+    except Exception as e:
+        logging.error(f"Error retrieving file_name for id {id}: {e}")
+        return None
+    finally:
+        conn.close()  # Ensure the connection is closed
+
 
 
 async def get_user_ids():

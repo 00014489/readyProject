@@ -6,32 +6,18 @@ import data.connection as dataPostgres
 from aiogram.types import CallbackQuery
 from aiogram.exceptions import TelegramAPIError
 import data.connection as dataPostgres
+import psutil
 import logging
 import gc
+from concurrent.futures import ThreadPoolExecutor
+# from run import process_audio_file
 import re
 import shutil  # For deleting directories and their content
-from collections import deque
 import asyncio
-from run import process_audio_file
 
 router = Router()
-audio_queue = deque()
-processing_semaphore = asyncio.Semaphore(3)  # Limit to 3 concurrent tasks
-processing = False
 
-async def track_message(message: Message, percentage: int = None):
-    message_id = message.message_id
-    chat_id = message.chat.id
-
-    if chat_id:
-        return await dataPostgres.insert_chat_and_message_id(chat_id, message_id, percentage)
-    
-
-def format_column_namesForDatabase(input_string: str):
-    base_name, extension = os.path.splitext(input_string)
-    cleaned_string = re.sub(r'[\'@()\-.]!#$%^&*', '', base_name)
-    formatted_name = cleaned_string.replace(' ', '_').lower()
-    return f"{formatted_name}{extension}"
+semaphore = asyncio.Semaphore(1) 
 
 
 async def forward_message_to_user(bot: Bot, from_chat_id: int, message_id: int, to_chat_id: int):
@@ -56,6 +42,24 @@ async def cmd_start(message: Message):
         "Great point, Day by day the bot will become more faster"))
 
 
+async def format_column_namesForDatabase(input_string: str) -> str:
+    # Check if the input is a valid string
+    if not isinstance(input_string, str) or input_string.strip() == "":
+        raise ValueError("Input must be a non-empty string.")
+    
+    # Log the input received
+    logging.debug(f"Input string received: {input_string}")
+
+    # Split the input into base name and extension
+    base_name, extension = os.path.splitext(input_string)
+
+    # Clean the base name
+    cleaned_string = re.sub(r"[\'@()\-.!#$%^&*]", "", base_name)  # Updated regex to clean unwanted characters
+    formatted_name = cleaned_string.replace(" ", "_").lower()
+
+    # Return the formatted name with the original extension
+    return f"{formatted_name}{extension}"
+
 
 @router.callback_query(F.data.startswith("mix_vocals"))
 async def handle_playlist_move(callback: CallbackQuery, bot: Bot):
@@ -65,88 +69,27 @@ async def handle_playlist_move(callback: CallbackQuery, bot: Bot):
     file_id = await dataPostgres.get_file_id_by_id(int(id_input))
     chat_id = callback.from_user.id
     processing_message = await callback.message.edit_text("Please wait ...")
-    # await callback.message.edit_text("Please wait ...")
 
     if await dataPostgres.check_file_exists_with_percentage(file_id, vocal_percentage):
         id = await dataPostgres.get_output_id_for_percentage(file_id, vocal_percentage)
         from_chat_id, message_id = await dataPostgres.get_chat_and_message_id_by_id(id, vocal_percentage)
         await forward_message_to_user(bot, from_chat_id, message_id, chat_id)
     else:
-
-        save_directory = f'./inputSongs{vocal_percentage}:{id_input}'
+        save_directory = f'./inputSongs{vocal_percentage}:{id_input}:{chat_id}'
         os.makedirs(save_directory, exist_ok=True)
 
         file_name = await dataPostgres.get_name_by_id(file_id)
         # Define the full path where the audio file will be saved
-        file_path = os.path.join(save_directory, format_column_namesForDatabase(file_name))
+        file_path = os.path.join(save_directory, await format_column_namesForDatabase(file_name))
 
-        # audio_queue.append((bot, callback.message, file_id, file_name, file_path, chat_id))
-        audio_queue.append((bot, callback.message, file_id, file_name, file_path, chat_id, vocal_percentage, id_input))
-        await process_audio_queue()
+        file = await bot.get_file(file_id)
+        await bot.download_file(file.file_path, destination=file_path)
+
+        
 
     await bot.delete_message(chat_id, processing_message.message_id)
         
 
-
-async def process_audio_queue():
-    global processing
-
-    if processing:
-        return  # Prevent multiple simultaneous process executions
-
-    processing = True
-
-    while audio_queue:
-        task = audio_queue.popleft()
-        bot, message, file_id, file_name, file_path, user_id, vocal_percentage, id_input = task
-
-        async with processing_semaphore:
-            try:
-                # Download the audio file
-                file = await bot.get_file(file_id)
-                await asyncio.wait_for(bot.download_file(file.file_path, destination=file_path), timeout=600)
-                logging.info(f"File {file_name} downloaded successfully to {file_path}")
-
-                # Log the vocal percentage being processed
-                logging.info(f"Processing audio file with vocal percentage: {vocal_percentage}%")
-
-                # Process the audio file
-                processed_audio_file, output_folder = await process_audio_file(file_path, vocal_percentage, id_input)
-                if processed_audio_file is None:
-                    raise ValueError("Processed audio file is None. Ensure the processing function returns a valid file path.")
-
-                # Send the processed file
-                sendFile = await asyncio.wait_for(bot.send_audio(chat_id=user_id, audio=FSInputFile(processed_audio_file)), timeout=240)
-                id = await track_message(sendFile, vocal_percentage)
-
-                # Insert file into the database
-                await dataPostgres.update_out_id_by_percent(file_id, id, vocal_percentage)
-
-                try:
-                    # Remove the newly created output folder
-                    if os.path.exists(output_folder):
-                        shutil.rmtree(output_folder)
-                        logging.info(f"Deleted output folder: {output_folder}")
-
-                    # Call garbage collection to free up memory
-                    gc.collect()  # Force garbage collection
-                    logging.info("Garbage collection executed.")
-
-                except Exception as cleanup_error:
-                    logging.error(f"Error cleaning up files: {cleanup_error}")
-
-            except asyncio.TimeoutError:
-                logging.error("Processing the file took too long.")
-                await message.reply("Processing the file took too long. Please try again later.")
-            except Exception as process_error:
-                logging.error(f"Error processing audio file: {process_error}", exc_info=True)
-                fail_add_message = f"Failed to process {file_name} due to an error: {str(process_error)}"
-                try:
-                    await message.reply(fail_add_message)
-                except Exception as reply_error:
-                    logging.error(f"Error sending failure message: {reply_error}")
-
-    processing = False
 
 
 @router.message(Command("help"))

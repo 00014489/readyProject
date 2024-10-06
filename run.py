@@ -1,11 +1,14 @@
 import os
 import logging
+import data.connection as dataPostgres
 import time
-import asyncio
+import gc
+import subprocess
 from spleeter.separator import Separator
 import tensorflow as tf
+import shutil
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 
 # TensorFlow configuration
@@ -20,46 +23,45 @@ except RuntimeError as e:
 # Enable eager execution for TensorFlow
 tf.config.run_functions_eagerly(True)
 
-async def convert_to_wav(input_file, new_folder, base_name):
-    """Convert the input file to WAV format asynchronously."""
+def convert_to_wav(input_file, new_folder, base_name):
+    """Convert the input file to WAV format synchronously."""
     wav_input_file = os.path.join(new_folder, f'{base_name}.wav')
-    process = await asyncio.create_subprocess_exec(
-        'ffmpeg', '-i', input_file, wav_input_file,
-        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    process = subprocess.run(
+        ['ffmpeg', '-i', input_file, wav_input_file],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
-    stdout, stderr = await process.communicate()
     if process.returncode != 0:
-        raise RuntimeError(f"FFmpeg conversion error: {stderr.decode()}")
+        raise RuntimeError(f"FFmpeg conversion error: {process.stderr.decode()}")
     return wav_input_file
 
-async def run_spleeter(wav_input_file, new_folder):
+def run_spleeter(wav_input_file, new_folder):
     """Separate the audio using Spleeter."""
     separator = Separator('spleeter:2stems')
     
     # Clear the previous session to avoid any conflicts
     tf.keras.backend.clear_session()
 
-    # Run Spleeter's TensorFlow-based operation in an executor
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, separator.separate_to_file, wav_input_file, new_folder)
+    # Run Spleeter's TensorFlow-based operation
+    separator.separate_to_file(wav_input_file, new_folder)
 
-async def convert_accompaniment_to_mp3(accompaniment_file, new_folder, base_name, output_format='mp3'):
-    """Convert the accompaniment (without vocals) to MP3 format asynchronously."""
+def convert_accompaniment_to_mp3(accompaniment_file, new_folder, base_name, output_format='mp3'):
+    """Convert the accompaniment (without vocals) to MP3 format synchronously."""
     output_file = os.path.join(new_folder, f'{base_name}_minus_320k.{output_format}')
-    process = await asyncio.create_subprocess_exec(
-        'ffmpeg', '-i', accompaniment_file, '-c:a', 'libmp3lame', '-b:a', '320k', output_file,
-        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    process = subprocess.run(
+        ['ffmpeg', '-i', accompaniment_file, '-c:a', 'libmp3lame', '-b:a', '320k', output_file],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
-    stdout, stderr = await process.communicate()
     if process.returncode != 0:
-        raise RuntimeError(f"FFmpeg conversion error: {stderr.decode()}")
+        raise RuntimeError(f"FFmpeg conversion error: {process.stderr.decode()}")
     return output_file
 
-async def mix_vocals_and_accompaniment(accompaniment_file, vocals_file, vocal_percentage, new_folder, base_name, output_format='mp3'):
+def mix_vocals_and_accompaniment(accompaniment_file, vocals_file, vocal_percentage, new_folder, base_name, output_format='mp3'):
     """Mix vocals into the accompaniment file based on the vocal percentage and convert to MP3 format."""
     output_file = os.path.join(new_folder, f'{base_name}_accompaniment_{vocal_percentage}percent_320k.{output_format}')
 
-    vocal_volume = vocal_percentage / 100.0
+    vocal_volume = int(vocal_percentage) / 100.0
     accompaniment_volume = 1  # Full volume for accompaniment
 
     filter_complex = (
@@ -68,28 +70,34 @@ async def mix_vocals_and_accompaniment(accompaniment_file, vocals_file, vocal_pe
         f"[a][v]amix=inputs=2:duration=longest"
     )
 
-    process = await asyncio.create_subprocess_exec(
-        'ffmpeg', '-i', accompaniment_file, '-i', vocals_file,
-        '-filter_complex', filter_complex,
-        '-c:a', 'libmp3lame', '-q:a', '0',
-        output_file,
-        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    process = subprocess.run(
+        ['ffmpeg', '-i', accompaniment_file, '-i', vocals_file,
+         '-filter_complex', filter_complex,
+         '-c:a', 'libmp3lame', '-q:a', '0', output_file],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
 
-    stdout, stderr = await process.communicate()
-
     if process.returncode != 0:
-        raise RuntimeError(f"FFmpeg mixing error: {stderr.decode()}")
+        raise RuntimeError(f"FFmpeg mixing error: {process.stderr.decode()}")
 
     return output_file
 
-async def process_audio_file(input_name: str, vocal_percentage: int, id_input: int, output_format='mp3'):
+def process_audio_file(vocal_percentage: int, id_input: int, user_id: int, output_format='mp3'):
     """Process audio file with specified vocal percentage mixed into accompaniment."""
     start_time = time.time()
+    input_name = dataPostgres.get_name_by_songId(id_input)  # Assuming this is a synchronous call
+    save_directory = f'./inputSongs{vocal_percentage}:{id_input}:{user_id}'
+    os.makedirs(save_directory, exist_ok=True)
+    logging.info(f"This is the ID of the song {id_input}")
+
+    if not isinstance(input_name, str) or not input_name:
+        raise ValueError("Invalid input_name provided. It must be a non-empty string.")
+
+    file_path = os.path.join(save_directory, str(input_name))
     logging.info(f"Starting to process audio file: {input_name} with vocal percentage: {vocal_percentage}%")
 
-
-    input_dir = os.path.dirname(input_name)
+    input_dir = os.path.dirname(file_path)
     base_name, input_ext = os.path.splitext(os.path.basename(input_name))
 
     extensions = ['.mp3', '.wav', '.flac', '.aac', '.m4a']
@@ -106,16 +114,16 @@ async def process_audio_file(input_name: str, vocal_percentage: int, id_input: i
     if input_file is None:
         raise FileNotFoundError(f"No audio file found for base name: {base_name}")
 
-    output_directory = f'./inputSongs{vocal_percentage}:{id_input}'
-    os.makedirs(output_directory, exist_ok=True)
+    output_directory = f'./sendSongs{vocal_percentage}:{id_input}:{user_id}'
+    os.makedirs(output_directory, exist_ok=True)  # Create the output directory
 
     if not input_file.endswith('.wav'):
-        wav_input_file = await convert_to_wav(input_file, output_directory, base_name)
+        wav_input_file = convert_to_wav(input_file, output_directory, base_name)
     else:
         wav_input_file = input_file
 
     logging.info(f"Starting Spleeter separation for {wav_input_file}")
-    await run_spleeter(wav_input_file, output_directory)
+    run_spleeter(wav_input_file, output_directory)
     logging.info(f"Completed Spleeter separation for {wav_input_file}")
 
     accompaniment_file = os.path.join(output_directory, base_name, 'accompaniment.wav')
@@ -123,21 +131,27 @@ async def process_audio_file(input_name: str, vocal_percentage: int, id_input: i
 
     if not os.path.exists(accompaniment_file):
         raise FileNotFoundError(f"Accompaniment file {accompaniment_file} does not exist.")
-    if vocal_percentage > 0 and not os.path.exists(vocals_file):
+    if int(vocal_percentage) > 0 and not os.path.exists(vocals_file):
         raise FileNotFoundError(f"Vocal file {vocals_file} does not exist.")
 
     logging.info(f"Mixing with vocal percentage: {vocal_percentage}%")
 
-    if vocal_percentage == 0:
-        combined_output_file = await convert_accompaniment_to_mp3(accompaniment_file, output_directory, base_name, output_format)
+    if int(vocal_percentage) == 0:
+        combined_output_file = convert_accompaniment_to_mp3(accompaniment_file, output_directory, base_name, output_format)
     else:
-        combined_output_file = await mix_vocals_and_accompaniment(accompaniment_file, vocals_file, vocal_percentage, output_directory, base_name, output_format)
+        combined_output_file = mix_vocals_and_accompaniment(accompaniment_file, vocals_file, vocal_percentage, output_directory, base_name, output_format)
 
+
+    # Clean up intermediate files
     os.remove(accompaniment_file)
     if input_file != wav_input_file:
         os.remove(wav_input_file)
 
     elapsed_time = time.time() - start_time
     logging.info(f"Processing completed in {elapsed_time:.2f} seconds.")
+
+    # Remove the save_directory folder and its contents
+    shutil.rmtree(save_directory, ignore_errors=True)
+    logging.info(f"Deleted temporary directory: {save_directory}")
+    gc.collect()
     
-    return combined_output_file, output_directory
