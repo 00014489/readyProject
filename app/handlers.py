@@ -4,6 +4,7 @@ import signal
 import re
 import logging
 import asyncio
+from run import process_audio_file
 from aiogram import Router, F, Bot
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, FSInputFile, CallbackQuery
