@@ -17,7 +17,7 @@ bot = Bot(token = TOKEN)
 dp = Dispatcher()
 
 async def main():
-    delete_input_songs_folders()
+    # delete_input_songs_folders()
     # Include router with your handlers
     dp.include_router(router)
     dp.update.middleware(AudioFileMiddleware())  # update
