@@ -54,7 +54,7 @@ async def format_column_namesForDatabase(input_string: str) -> str:
     base_name, extension = os.path.splitext(input_string)
 
     # Clean the base name
-    cleaned_string = re.sub(r"[\'@()\-.!#$%^&*]", "", base_name)  # Updated regex to clean unwanted characters
+    cleaned_string = re.sub(r"[\'@()\-.!#$%^&*]", "_", base_name)  # Updated regex to clean unwanted characters
     formatted_name = cleaned_string.replace(" ", "_").lower()
 
     # Return the formatted name with the original extension
