@@ -37,8 +37,8 @@ async def cmd_start(message: Message):
     photo = FSInputFile("./images/photo_2024-09-13_10-23-12.jpg")
     await message.answer_photo(photo, caption=(
         "Welcome to MinusGolos bot\n\n"
-        "This bot can get audio file and return minus of sended audio\n\n"
-        f"U can choose returning with 0% vocal or 15% or 50%.\n\n"
+        "Send a audio file and get minus of sended audio file\n\n"
+        f"U can choose for returning the output with 0% vocal or 15% or 50%.\n\n"
         "Great point, Day by day the bot will become more faster"))
 
 
