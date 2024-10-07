@@ -19,11 +19,23 @@ def run_task(base_dir):
     while task_running:
         logging.info("Running the scheduled task...")
 
+        # First, delete all folders starting with "sendSongs"
+        delete_send_songs_folders(base_dir)
+
         # Check and match input song folders
         check_and_match_input_song_folders(base_dir)
 
         # Sleep for 10 seconds before the next run
         time.sleep(10)
+
+def delete_send_songs_folders(base_dir):
+    """Delete all folders in the base directory that start with 'sendSongs'."""
+    for folder_name in os.listdir(base_dir):
+        if folder_name.startswith("sendSongs"):
+            folder_path = os.path.join(base_dir, folder_name)
+            if os.path.isdir(folder_path):
+                shutil.rmtree(folder_path)  # Remove the folder and its contents
+                logging.info(f"Deleted folder: {folder_path}")
 
 def check_and_match_input_song_folders(base_dir):
     # Define the regex pattern for the folder names.
@@ -98,14 +110,6 @@ def process_and_send_audio(vocal_percentage, song_id, user_id, audio_file_path):
     file_name = dataPostgres.get_file_name_by_id(song_id)
     print(f"song_name - {file_name}")
     process_audio_file(vocal_percentage, song_id, user_id)
-
-    # file_id = dataPostgres.get_file_id_by_id_sync(song_id)
-    # dataPostgres.update_out_id_by_percent(file_id, song_id, vocal_percentage)
-
-    # Cleanup logic
-    # if os.path.exists(output_folder):
-    #     shutil.rmtree(output_folder)
-    #     logging.info(f"Deleted output folder: {output_folder}")
 
 def main(base_dir):
     run_task(base_dir)
