@@ -137,9 +137,9 @@ def process_audio_file(vocal_percentage: int, id_input: int, user_id: int, outpu
     logging.info(f"Mixing with vocal percentage: {vocal_percentage}%")
 
     if int(vocal_percentage) == 0:
-        combined_output_file = convert_accompaniment_to_mp3(accompaniment_file, output_directory, base_name, output_format)
+        convert_accompaniment_to_mp3(accompaniment_file, output_directory, base_name, output_format)
     else:
-        combined_output_file = mix_vocals_and_accompaniment(accompaniment_file, vocals_file, vocal_percentage, output_directory, base_name, output_format)
+        mix_vocals_and_accompaniment(accompaniment_file, vocals_file, vocal_percentage, output_directory, base_name, output_format)
 
 
     # Clean up intermediate files
