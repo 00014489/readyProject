@@ -83,8 +83,8 @@ def check_and_match_input_song_folders(base_dir):
                             found_matching_folders.append((vocal_percentage, song_id, user_id, expected_audio_file_path))
                         elif not remaining_files:
                             # If the folder is completely empty, delete the folder
-                            shutil.rmtree(folder_path)
-                            logging.info(f"Deleted empty folder: {folder_path}")
+                            # shutil.rmtree(folder_path)
+                            logging.info(f"there are nothing in this folder {folder_path}")
 
     # Check RAM usage
     ram_usage = psutil.virtual_memory()
