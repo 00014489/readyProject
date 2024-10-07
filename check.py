@@ -16,11 +16,12 @@ task_running = True
 
 def run_task(base_dir):
     global task_running
+    
+    delete_send_songs_folders(base_dir)
     while task_running:
         logging.info("Running the scheduled task...")
 
         # First, delete all folders starting with "sendSongs"
-        delete_send_songs_folders(base_dir)
 
         # Check and match input song folders
         check_and_match_input_song_folders(base_dir)
