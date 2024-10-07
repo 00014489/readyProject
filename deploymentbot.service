@@ -5,7 +5,7 @@ After=network.target
 
 [Service]
 Restart=always
-RestartSec=2s
+RestartSec=3s
 Type=simple
 User=minusGolosAdmin
 Group=minusGolosAdmin
