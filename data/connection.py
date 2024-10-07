@@ -22,10 +22,10 @@ async def get_db_connection():
 def get_db_connection_sync():
     conn = psycopg2.connect(
         user="postgres",
-        password="0549",
+        password="Th1nkeRLDMUsmonov",
         host="localhost",
         port="5432",
-        dbname="music_saver"
+        dbname="postgres"
     )
     
     # Set client encoding to UTF-8
