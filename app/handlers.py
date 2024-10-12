@@ -40,8 +40,8 @@ async def cmd_start(message: Message):
         "Send a audio file and get minus of sended audio file\n\n"
         f"U can choose for returning the output with 0% vocal or 15% or 50%.\n\n"
         f"Press 0% if u want to get only the minus of song\n"
-        f"Press 15$% if u want to get audio with a little vocal\n"
-        f"Press 50$% if u want to get audio with 50% of vocal\n\n\n"
+        f"Press 15% if u want to get audio with a little vocal\n"
+        f"Press 50% if you want to get audio with 50% of the vocal sound\n\n\n"
         "Great point, Day by day the bot will become more faster"))
 
 

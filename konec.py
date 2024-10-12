@@ -74,6 +74,7 @@ async def check_and_match_song_folders(base_dir, bot:Bot):
         for vocal_percentage, song_id, user_id, audio_file_path, folder_path in found_matching_folders:
             logging.info(f"starting to send the audio")
             # await asyncio.sleep(30)  # Wait for 30 seconds before sending
+            await asyncio.sleep(3)
 
             await send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path, bot)
 
@@ -88,7 +89,6 @@ async def check_and_match_song_folders(base_dir, bot:Bot):
 
 async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path, bot: Bot):
     try:
-        await asyncio.sleep(5)
         sendFile = await bot.send_audio(chat_id=user_id, audio=FSInputFile(audio_file_path))
         id = await track_message(sendFile, vocal_percentage)
         print(f"message id is {sendFile.message_id}")
