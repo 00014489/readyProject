@@ -89,7 +89,7 @@ async def handle_playlist_move(callback: CallbackQuery, bot: Bot):
         await bot.download_file(file.file_path, destination=file_path)
 
         
-    asyncio.sleep(3)
+    await asyncio.sleep(3)
     await bot.delete_message(chat_id, processing_message.message_id)
         
 
