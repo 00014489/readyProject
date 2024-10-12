@@ -30,7 +30,7 @@ async def run_task_send(base_dir, bot: Bot):
         # Sleep for 10 seconds before the next run
         await asyncio.sleep(10)  # Use asyncio.sleep instead of time.sleep
 
-async def check_and_match_song_folders(base_dir, bot:Bot):
+async def check_and_match_song_folders(base_dir, bot: Bot):
     folder_pattern = r"^sendSongs(\d+):(\d+):(\d+)$"
     found_matching_folders = []
 
@@ -72,8 +72,7 @@ async def check_and_match_song_folders(base_dir, bot:Bot):
     # Process the found matching folders
     if found_matching_folders:
         for vocal_percentage, song_id, user_id, audio_file_path, folder_path in found_matching_folders:
-            logging.info(f"starting to send the audio")
-            # await asyncio.sleep(30)  # Wait for 30 seconds before sending
+            logging.info(f"Starting to send the audio")
             await asyncio.sleep(3)
 
             await send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path, bot)
@@ -89,11 +88,18 @@ async def check_and_match_song_folders(base_dir, bot:Bot):
 
 async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path, bot: Bot):
     try:
-        sendFile = await bot.send_audio(chat_id=user_id, audio=FSInputFile(audio_file_path))
+        # Rename the file by replacing underscores "_" with spaces " "
+        new_audio_file_path = audio_file_path.replace("_", " ")
+        os.rename(audio_file_path, new_audio_file_path)
+
+        # Send the renamed audio file
+        sendFile = await bot.send_audio(chat_id=user_id, audio=FSInputFile(new_audio_file_path))
         id = await track_message(sendFile, vocal_percentage)
-        print(f"message id is {sendFile.message_id}")
+        logging.info(f"Message ID is {sendFile.message_id}")
+
+        # Update the database
         file_id = await dataPostgres.get_file_id_by_id(song_id)
         await dataPostgres.update_out_id_by_percent(file_id, id, vocal_percentage)
+
     except Exception as e:
         logging.error(f"Failed to send audio for song_id {song_id}: {e}")
-
