@@ -84,6 +84,7 @@ async def check_and_match_song_folders(base_dir, bot: Bot):
                 logging.info(f"Deleted folder: {folder_path}")
             except Exception as e:
                 logging.error(f"Failed to delete folder {folder_path}: {e}")
+                await bot.send_message(chat_id=user_id, text="Please try again.")
     else:
         logging.info("No matching folders found for sending.")
 
