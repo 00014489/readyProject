@@ -97,7 +97,7 @@ async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path,
         file_extension = os.path.splitext(original_file_name)[1]  # Get the file extension
 
         # Construct the new file name by adding vocal_percentage and "byMinusGolos" to the original name
-        new_file_name = f"{os.path.splitext(original_file_name)[0]}_{vocal_percentage}percent_byMinusGolos{file_extension}"
+        new_file_name = f"{os.path.splitext(original_file_name)[0]}_{vocal_percentage}per_MG{file_extension}"
 
         # Form the full path for the new file name
         new_audio_file_path = os.path.join(file_dir, new_file_name)
@@ -109,6 +109,7 @@ async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path,
         sendFile = await bot.send_audio(chat_id=user_id, audio=FSInputFile(new_audio_file_path))
         id = await track_message(sendFile, vocal_percentage)
         logging.info(f"Message ID is {sendFile.message_id}")
+        
 
         # Update the database
         file_id = await dataPostgres.get_file_id_by_id(song_id)
