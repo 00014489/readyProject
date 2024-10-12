@@ -91,20 +91,20 @@ async def check_and_match_song_folders(base_dir, bot: Bot):
 async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path, bot: Bot):
     try:
         # Get the original file name from the database
-        # original_file_name = await dataPostgres.get_file_name_original_by_id(song_id)
+        original_file_name = await dataPostgres.get_file_name_original_by_id(song_id)
         
-        # # Extract the directory and extension from the original audio file path
-        # file_dir = os.path.dirname(audio_file_path)
-        # file_extension = os.path.splitext(original_file_name)[1]  # Get the file extension
+        # Extract the directory and extension from the original audio file path
+        file_dir = os.path.dirname(audio_file_path)
+        file_extension = os.path.splitext(original_file_name)[1]  # Get the file extension
 
-        # # Construct the new file name by adding vocal_percentage and "byMinusGolos" to the original name
-        # new_file_name = f"{os.path.splitext(original_file_name)[0]}_{vocal_percentage}per_MG{file_extension}"
+        # Construct the new file name by adding vocal_percentage and "byMinusGolos" to the original name
+        new_file_name = f"{os.path.splitext(original_file_name)[0]}_{vocal_percentage}per_MG{file_extension}"
 
-        # # Form the full path for the new file name
-        # new_audio_file_path = os.path.join(file_dir, new_file_name)
+        # Form the full path for the new file name
+        new_audio_file_path = os.path.join(file_dir, new_file_name)
 
-        # # Perform the renaming operation
-        # os.rename(audio_file_path, new_audio_file_path)
+        # Perform the renaming operation
+        os.rename(audio_file_path, new_audio_file_path)
 
         # Send the renamed audio file
         sendFile = await bot.send_audio(chat_id=user_id, audio=FSInputFile(audio_file_path))
