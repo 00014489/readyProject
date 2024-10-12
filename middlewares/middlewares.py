@@ -39,7 +39,7 @@ class AudioFileMiddleware(BaseMiddleware):
                     file_name_without_extension = os.path.splitext(file_name)[0]
                     
                     # Insert into the database with the file name without the extension
-                    await dataPostgres.insert_into_input_file(file_id, format_column_namesForDatabase(file_name_without_extension), file_name_without_extension)
+                    await dataPostgres.insert_into_input_file(file_id, format_column_namesForDatabase(file_name), file_name_without_extension)
 
                 try:
                     await message.reply("Please select the vocal percentage...", reply_markup=await kbIn.percent_choose(file_id))
