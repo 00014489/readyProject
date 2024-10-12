@@ -39,6 +39,9 @@ async def cmd_start(message: Message):
         "Welcome to MinusGolos bot\n\n"
         "Send a audio file and get minus of sended audio file\n\n"
         f"U can choose for returning the output with 0% vocal or 15% or 50%.\n\n"
+        f"Press 0% if u want to get only the minus of song\n"
+        f"Press 15$% if u want to get audio with a little vocal\n"
+        f"Press 50$% if u want to get audio with 50% of vocal\n\n\n"
         "Great point, Day by day the bot will become more faster"))
 
 
@@ -115,6 +118,27 @@ async def cmd_help(message: Message):
 ADMIN_ID = 1031267509
 forwarding_enabled = False
 
+
+@router.message(Command("turn_on"))
+async def turn_on_forwarding(message: Message):
+    """Command to turn on message forwarding (only admin can turn it on)."""
+    global forwarding_enabled
+    if message.from_user.id == ADMIN_ID:
+        forwarding_enabled = True
+        await message.answer("Message forwarding has been turned ON.")
+    else:
+        await message.answer("You don't have permission to use this command.")
+
+@router.message(Command("turn_off"))
+async def turn_off_forwarding(message: Message):
+    """Command to turn off message forwarding (only admin can turn it off)."""
+    global forwarding_enabled
+    if message.from_user.id == ADMIN_ID:
+        forwarding_enabled = False
+        await message.answer("Message forwarding has been turned OFF.")
+    else:
+        await message.answer("You don't have permission to use this command.")
+
 @router.message()
 async def handle_message_reklama(message: Message):
     """
@@ -160,22 +184,4 @@ async def forward_message_to_users(from_chat_id: int, message_id: int, bot: Bot)
             print(f"Failed to forward message to user {user_id}: {e}")
         await asyncio.sleep(0.03)  # 30 milliseconds delay to respect Telegram API limits
 
-@router.message(Command("turn_on"))
-async def turn_on_forwarding(message: Message):
-    """Command to turn on message forwarding (only admin can turn it on)."""
-    global forwarding_enabled
-    if message.from_user.id == ADMIN_ID:
-        forwarding_enabled = True
-        await message.answer("Message forwarding has been turned ON.")
-    else:
-        await message.answer("You don't have permission to use this command.")
 
-@router.message(Command("turn_off"))
-async def turn_off_forwarding(message: Message):
-    """Command to turn off message forwarding (only admin can turn it off)."""
-    global forwarding_enabled
-    if message.from_user.id == ADMIN_ID:
-        forwarding_enabled = False
-        await message.answer("Message forwarding has been turned OFF.")
-    else:
-        await message.answer("You don't have permission to use this command.")
