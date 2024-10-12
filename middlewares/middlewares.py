@@ -20,7 +20,7 @@ class AudioFileMiddleware(BaseMiddleware):
             message = event.message
 
             if message.content_type == ContentType.AUDIO:
-                user_id = message.from_user.id
+                # user_id = message.from_user.id
                 file_id = message.audio.file_id
                 file_name = message.audio.file_name or "Unknown_Song.mp3"
                 file_size = message.audio.file_size / (1024 * 1024)  # Convert size to MB
@@ -35,7 +35,7 @@ class AudioFileMiddleware(BaseMiddleware):
                     return
 
                 if not await dataPostgres.check_file_exists(file_id):
-                    await dataPostgres.insert_into_input_file(file_id, format_column_namesForDatabase(file_name))
+                    await dataPostgres.insert_into_input_file(file_id, format_column_namesForDatabase(file_name), file_name)
                 try:
                     await message.reply("Please select the vocal percentage...", reply_markup=await kbIn.percent_choose(file_id))
                 except Exception as e:

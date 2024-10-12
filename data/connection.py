@@ -149,17 +149,17 @@ async def get_id_by_message_id(record_id: int, vocal_percentage: int):
         
 
 
-async def insert_into_input_file(file_id: str, file_name: str):
+async def insert_into_input_file(file_id: str, file_name: str, file_name_original: str):
     conn = await get_db_connection()  # Assuming you have get_db_connection() defined
     try:
         async with conn.cursor() as cur:
             # Insert into the input_file table
             await cur.execute(
                 """
-                INSERT INTO input_file (file_id, file_name)
-                VALUES (%s, %s);
+                INSERT INTO input_file (file_id, file_name, file_name_original)
+                VALUES (%s, %s, %s);
                 """,
-                (file_id, file_name)
+                (file_id, file_name, file_name_original)
             )
             await conn.commit()  # Commit the transaction to save the data
             logging.info(f"Inserted into input_file: file_id={file_id}")
@@ -420,6 +420,36 @@ async def get_file_id_by_id(id: int):
                 return None
     except Exception as e:
         logging.error(f"Error retrieving file_id for id {id}: {e}")
+        return None
+    finally:
+        await conn.close()
+        
+async def get_file_name_original_by_id(id: int):
+    """
+    Retrieves the file_name_original from the table based on the given id.
+
+    :param id: The identifier to search for.
+    :return: The file_name_original associated with the given id, or None if not found.
+    """
+    query = """
+        SELECT file_name_original
+        FROM input_file
+        WHERE id = %s;
+    """
+    
+    conn = await get_db_connection()  # Assuming you have an async function to get DB connection
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (id,))
+            result = await cur.fetchone()  # Fetch the first matching result
+            
+            if result:
+                return result[0]  # Return the file_name_original
+            else:
+                logging.info(f"No record found for id: {id}.")
+                return None
+    except Exception as e:
+        logging.error(f"Error retrieving file_name_original for id {id}: {e}")
         return None
     finally:
         await conn.close()

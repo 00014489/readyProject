@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import data.connection as dataPostgres
 from aiogram.types import Message, FSInputFile
+from aiogram.exceptions import TelegramBadRequest
 
 # Initialize task_starting as True or False based on your requirements
 task_starting = True
@@ -88,8 +89,20 @@ async def check_and_match_song_folders(base_dir, bot: Bot):
 
 async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path, bot: Bot):
     try:
-        # Rename the file by replacing underscores "_" with spaces " "
-        new_audio_file_path = audio_file_path.replace("_", " ")
+        # Get the original file name from the database
+        original_file_name = await dataPostgres.get_file_name_original_by_id(song_id)
+        
+        # Extract the directory and extension from the original audio file path
+        file_dir = os.path.dirname(audio_file_path)
+        file_extension = os.path.splitext(original_file_name)[1]  # Get the file extension
+
+        # Construct the new file name by adding vocal_percentage and "byMinusGolos" to the original name
+        new_file_name = f"{os.path.splitext(original_file_name)[0]}_{vocal_percentage}percent_byMinusGolos{file_extension}"
+
+        # Form the full path for the new file name
+        new_audio_file_path = os.path.join(file_dir, new_file_name)
+
+        # Perform the renaming operation
         os.rename(audio_file_path, new_audio_file_path)
 
         # Send the renamed audio file
@@ -101,5 +114,9 @@ async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path,
         file_id = await dataPostgres.get_file_id_by_id(song_id)
         await dataPostgres.update_out_id_by_percent(file_id, id, vocal_percentage)
 
-    except Exception as e:
+    except TelegramBadRequest as e:
         logging.error(f"Failed to send audio for song_id {song_id}: {e}")
+        # If the sending process fails with BadRequest, notify the user
+        await bot.send_message(chat_id=user_id, text="Please try again.")
+    except Exception as e:
+        logging.error(f"Unexpected error for song_id {song_id}: {e}")
