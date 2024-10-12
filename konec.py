@@ -107,7 +107,7 @@ async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path,
         os.rename(audio_file_path, new_audio_file_path)
 
         # Send the renamed audio file
-        sendFile = await bot.send_audio(chat_id=user_id, audio=FSInputFile(audio_file_path))
+        sendFile = await bot.send_audio(chat_id=user_id, audio=FSInputFile(new_audio_file_path))
         id = await track_message(sendFile, vocal_percentage)
         logging.info(f"Message ID is {sendFile.message_id}")
         
