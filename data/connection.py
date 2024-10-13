@@ -8,7 +8,7 @@ from aiogram.types import Message
 async def get_db_connection():
     conn = await psycopg.AsyncConnection.connect(
         user="postgres",
-        password="0549",
+        password="Th1nkeRLDMUsmonov",
         host="localhost",
         port="5432",
         dbname="music_saver"
@@ -23,7 +23,7 @@ async def get_db_connection():
 def get_db_connection_sync():
     conn = psycopg2.connect(
         user="postgres",
-        password="0549",
+        password="Th1nkeRLDMUsmonov",
         host="localhost",
         port="5432",
         dbname="music_saver"
@@ -190,28 +190,6 @@ async def link_exists(link: str) -> bool:
     finally:
         await conn.close()  # Ensure the connection is closed
 
-# async def link_exists_with_non_zero_message_id(link: str) -> bool:
-#     conn = await get_db_connection()  # Assuming you have get_db_connection() defined
-#     try:
-#         async with conn.cursor() as cur:
-#             # Query to check if the link exists and its message_id is not 0
-#             await cur.execute(
-#                 """
-#                 SELECT EXISTS (
-#                     SELECT 1 FROM user_links 
-#                     WHERE link = %s AND message_id = 0
-#                 );
-#                 """,
-#                 (link,)  # Pass link as a tuple
-#             )
-#             # Fetch the result, which will be a single row with a single boolean value
-#             exists = await cur.fetchone()
-#             return exists[0]  # Return the boolean value
-#     except Exception as e:
-#         logging.error(f"Error checking link existence: {e}")
-#         return False  # Return False in case of error
-#     finally:
-#         await conn.close()  # Ensure the connection is closed
 
 
 async def get_user_id_and_message_id(link: str):
@@ -240,60 +218,6 @@ async def get_user_id_and_message_id(link: str):
     finally:
         await conn.close()  # Ensure the connection is closed
 
-# async def update_message_id_by_link(message: Message, link: str):
-#     message_id = message.message_id
-#     connection = await get_db_connection()
-#     try:
-#         # Establish the async connection to the database
-#         connection = await get_db_connection()
-
-#         # Use async context manager with the connection cursor
-#         async with connection.cursor() as cursor:
-#             # Define the SQL command to update the language_id
-#             query = f"""
-#                 UPDATE user_links
-#                 SET message_id = %s
-#                 WHERE link = %s;
-#             """
-            
-#             # Execute the SQL command with parameters
-#             await cursor.execute(query, (message_id, link))
-            
-#             # Commit the transaction
-#             await connection.commit()
-#             print("Successfully updated {out_column} for file_id {file_id} value {out_id}.")
-
-#     except (Exception, psycopg.Error) as error:
-#         print("Error while updating:", error)
-    
-#     finally:
-#         if connection:
-#             await connection.close()
-#             print("PostgreSQL connection is closed")
-
-# async def update_message_id_by_link(message_id: int, link: str) -> None:
-#     conn = await get_db_connection()  # Assuming you have get_db_connection() defined
-#     try:
-#         async with conn.cursor() as cur:
-#             await cur.execute(
-#                 """
-#                 UPDATE user_links
-#                 SET message_id = %s
-#                 WHERE link = %s;
-#                 """,
-#                 (message_id, link)  # Ensure message_id is an integer
-#             )
-#             affected_rows = cur.rowcount  # Get the number of affected rows
-#             await conn.commit()  # Commit the transaction to save the changes
-            
-#             if affected_rows > 0:
-#                 logging.info(f"Updated user_links: link={link}, message_id={message_id}")
-#             else:
-#                 logging.warning(f"No rows updated for link={link}; it may not exist.")
-#     except Exception as e:
-#         logging.error(f"Error updating user_links for link={link}: {e}")
-#     finally:
-#         await conn.close()  # Ensure the connection is closed
 
 async def insert_into_input_file(file_id: str, file_name: str, file_name_original: str):
     conn = await get_db_connection()  # Assuming you have get_db_connection() defined
