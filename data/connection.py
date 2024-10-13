@@ -11,7 +11,7 @@ async def get_db_connection():
         password="Th1nkeRLDMUsmonov",
         host="localhost",
         port="5432",
-        dbname="music_saver"
+        dbname="postgres"
     )
     
     # Set client encoding to UTF-8
@@ -26,7 +26,7 @@ def get_db_connection_sync():
         password="Th1nkeRLDMUsmonov",
         host="localhost",
         port="5432",
-        dbname="music_saver"
+        dbname="postgres"
     )
     
     # Set client encoding to UTF-8
