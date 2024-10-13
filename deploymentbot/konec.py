@@ -1,15 +1,17 @@
 import logging
-import os
 import re
 import shutil
 from aiogram import Bot
-import psutil
+# import psutil
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import data.connection as dataPostgres
 from aiogram.types import Message, FSInputFile
 from aiogram.exceptions import TelegramBadRequest
+import os
 
+
+    
 # Initialize task_starting as True or False based on your requirements
 task_starting = True
 
