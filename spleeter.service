@@ -8,7 +8,7 @@ RestartSec=10s
 Type=simple
 User=minusGolosAdmin
 Group=minusGolosAdmin
-MemoryMax=12G
+MemoryMax=7G
 WorkingDirectory=/home/minusGolosAdmin/readyProject
 ExecStart=/bin/bash -c "source /home/minusGolosAdmin/miniconda3/etc/profile.d/conda.sh && conda activate myenvC && source /home/minusGolosAdmin/readyProject/myenv/bin/activate && exec>
 
