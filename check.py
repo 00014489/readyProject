@@ -5,7 +5,7 @@ import shutil
 import re
 from concurrent.futures import ThreadPoolExecutor
 import data.connection as dataPostgres
-from spleeterF.run import process_audio_file
+from run import process_audio_file
 import time
 
 # Configure logging

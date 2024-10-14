@@ -1,17 +1,15 @@
 import logging
+import os
 import re
 import shutil
 from aiogram import Bot
-# import psutil
+import psutil
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import data.connection as dataPostgres
 from aiogram.types import Message, FSInputFile
 from aiogram.exceptions import TelegramBadRequest
-import os
 
-
-    
 # Initialize task_starting as True or False based on your requirements
 task_starting = True
 
@@ -86,7 +84,6 @@ async def check_and_match_song_folders(base_dir, bot: Bot):
                 logging.info(f"Deleted folder: {folder_path}")
             except Exception as e:
                 logging.error(f"Failed to delete folder {folder_path}: {e}")
-                await bot.send_message(chat_id=user_id, text="Please try again.")
     else:
         logging.info("No matching folders found for sending.")
 

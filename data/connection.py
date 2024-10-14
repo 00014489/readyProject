@@ -2,7 +2,6 @@ import psycopg
 from psycopg import sql
 import logging
 import psycopg2
-from aiogram.types import Message
 
 # Async connection creation for psycopg3
 async def get_db_connection():
@@ -147,76 +146,7 @@ async def get_id_by_message_id(record_id: int, vocal_percentage: int):
         # Ensure the connection is closed
         await conn.close()
 
-
-async def insert_into_links(user_id: int, link: str, message: Message):
-    message_id = message.message_id
-    conn = await get_db_connection()  # Assuming you have get_db_connection() defined
-    try:
-        async with conn.cursor() as cur:
-            # Insert into the input_file table
-            await cur.execute(
-                """
-                INSERT INTO user_links (user_id, link, message_id)
-                VALUES (%s, %s, %s);
-                """,
-                (user_id, link)
-            )
-            await conn.commit()  # Commit the transaction to save the data
-            logging.info(f"Inserted into input_file: file_id={link}")
-    except Exception as e:
-        logging.error(f"Error inserting into input_file: {e}")
-    finally:
-        await conn.close()  # Ensure the connection is closed
-
-async def link_exists(link: str) -> bool:
-    conn = await get_db_connection()  # Assuming you have get_db_connection() defined
-    try:
-        async with conn.cursor() as cur:
-            # Query to check if the link exists
-            await cur.execute(
-                """
-                SELECT EXISTS (
-                    SELECT 1 FROM user_links WHERE link = %s
-                );
-                """,
-                (link,)  # Pass link as a tuple
-            )
-            # Fetch the result, which will be a single row with a single boolean value
-            exists = await cur.fetchone()
-            return exists[0]  # Return the boolean value
-    except Exception as e:
-        logging.error(f"Error checking link existence: {e}")
-        return False  # Return False in case of error
-    finally:
-        await conn.close()  # Ensure the connection is closed
-
-
-
-async def get_user_id_and_message_id(link: str):
-    conn = await get_db_connection()  # Assuming you have get_db_connection() defined
-    try:
-        async with conn.cursor() as cur:
-            # Query to get user_id and message_id for the specified link
-            await cur.execute(
-                """
-                SELECT user_id, message_id 
-                FROM user_links 
-                WHERE link = %s;
-                """,
-                (link,)  # Pass link as a tuple
-            )
-            # Fetch the result, which will be a tuple (user_id, message_id)
-            result = await cur.fetchone()
-            if result:
-                user_id, message_id = result
-                return user_id, message_id  # Return both user_id and message_id
-            else:
-                return None, None  # Return None if no result found
-    except Exception as e:
-        logging.error(f"Error fetching user_id and message_id: {e}")
-        return None, None  # Return None in case of error
-    finally:
-        await conn.close()  # Ensure the connection is closed
+        
 
 
 async def insert_into_input_file(file_id: str, file_name: str, file_name_original: str):
@@ -404,7 +334,7 @@ async def insert_chat_and_message_id(chat_id: int, message_id: int, percentage: 
 
 
 async def update_out_id_by_percent(file_id: str, out_id: int, percent: int):
-    connection = await get_db_connection()
+    connection = None
     out_column = f"out_{percent}_id"
     try:
         # Establish the async connection to the database

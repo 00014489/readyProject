@@ -3,9 +3,9 @@ import logging
 import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher
-from deploymentbot.app.handlers import router
-from deploymentbot.konec import run_task_send
-from deploymentbot.middlewares.middlewares import AudioFileMiddleware, BotMessageTrackerMiddleware
+from app.handlers import router
+from konec import run_task_send
+from middlewares.middlewares import AudioFileMiddleware
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +18,6 @@ dp = Dispatcher()
 
 async def main():
     dp.include_router(router)
-    dp.update.middleware(BotMessageTrackerMiddleware(bot))
     dp.update.middleware(AudioFileMiddleware())  # Update middleware
     asyncio.create_task(run_task_send("./", bot))
 
