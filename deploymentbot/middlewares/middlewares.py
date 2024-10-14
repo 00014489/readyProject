@@ -55,6 +55,7 @@ async def download_youtube_audio(bot: Bot, youtube_link: str, chat_id: int):
             }],
             'noplaylist': True,             # Avoid downloading playlists
             'quiet': False,                 # Set to True to suppress output (optional)
+            'cookies': '/home/minusGolosAdmin/cookies.txt',             
         }
 
         # Download audio using yt-dlp with sanitized filename
