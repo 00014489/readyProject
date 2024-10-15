@@ -23,8 +23,8 @@ def run_task(base_dir):
         logging.info("Running the scheduled task...")
 
         # First, delete all folders starting with "sendSongs"
-        # Sleep for 10 seconds before the next run
-        time.sleep(10)
+        # Sleep for 5 seconds before the next run
+        time.sleep(5)
         # Check and match input song folders
         check_and_match_input_song_folders(base_dir)
     
