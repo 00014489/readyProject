@@ -93,7 +93,7 @@ def check_and_match_input_song_folders(base_dir):
     # Process and send the audio files if any valid ones were found
     if found_matching_folders:
         for vocal_percentage, song_id, user_id, audio_file_path in found_matching_folders:
-            time.sleep(10)
+            time.sleep(3)
             
             process_and_send_audio(vocal_percentage, song_id, user_id, audio_file_path)
             # Check RAM usage
