@@ -25,16 +25,7 @@ def run_task(base_dir):
 
         # Check and match input song folders
         check_and_match_input_song_folders(base_dir)
-        # Check RAM usage
-        ram_usage = psutil.virtual_memory()
-        used_ram_percentage = ram_usage.percent  # Get the percentage of used RAM
-        logging.info(f"Now RAM usage is {used_ram_percentage}")
-
-        if used_ram_percentage > 55:
-            logging.warning("RAM usage exceeds 55%. Stopping the current task.")
-            global task_running
-            task_running = False  # Stop the task loop
-            return  # Exit the function to avoid processing audio files
+    
         # Sleep for 10 seconds before the next run
         time.sleep(10)
 
@@ -115,6 +106,16 @@ def process_and_send_audio(vocal_percentage, song_id, user_id, audio_file_path):
 
 def main(base_dir):
     run_task(base_dir)
+    # Check RAM usage
+    ram_usage = psutil.virtual_memory()
+    used_ram_percentage = ram_usage.percent  # Get the percentage of used RAM
+    logging.info(f"Now RAM usage is {used_ram_percentage}")
+
+    if used_ram_percentage > 55:
+        logging.warning("RAM usage exceeds 55%. Stopping the current task.")
+        global task_running
+        task_running = False  # Stop the task loop
+        return  # Exit the function to avoid processing audio files
 
 # Entry point for the program
 if __name__ == "__main__":
