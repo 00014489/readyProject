@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 def run_task(base_dir):
     # global task_running
-    time.sleep(5)
+    time.sleep(8)
     delete_send_songs_folders(base_dir)
     while True:
         logging.info("Running the scheduled task...")
