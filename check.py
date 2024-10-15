@@ -99,13 +99,6 @@ def check_and_match_input_song_folders(base_dir):
 
 def process_and_send_audio(vocal_percentage, song_id, user_id, audio_file_path):
     print(f"song_id - {song_id}")
-
-    file_name = dataPostgres.get_file_name_by_id(song_id)
-    print(f"song_name - {file_name}")
-    process_audio_file(vocal_percentage, song_id, user_id)
-
-def main(base_dir):
-    run_task(base_dir)
     # Check RAM usage
     ram_usage = psutil.virtual_memory()
     used_ram_percentage = ram_usage.percent  # Get the percentage of used RAM
@@ -116,6 +109,13 @@ def main(base_dir):
         global task_running
         task_running = False  # Stop the task loop
         return  # Exit the function to avoid processing audio files
+    file_name = dataPostgres.get_file_name_by_id(song_id)
+    print(f"song_name - {file_name}")
+    process_audio_file(vocal_percentage, song_id, user_id)
+
+def main(base_dir):
+    run_task(base_dir)
+    
 
 # Entry point for the program
 if __name__ == "__main__":
