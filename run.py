@@ -114,7 +114,7 @@ def process_audio_file(vocal_percentage: int, id_input: int, user_id: int, outpu
     if input_file is None:
         logging.error(f"No audio file found for base name: {base_name}. Deleting folder: {save_directory}")
         shutil.rmtree(save_directory, ignore_errors=True)
-        raise FileNotFoundError(f"No audio file found for base name: {base_name}")
+        # raise FileNotFoundError(f"No audio file found for base name: {base_name}")
 
     output_directory = f'./sendSongs{vocal_percentage}:{id_input}:{user_id}'
     os.makedirs(output_directory, exist_ok=True)  # Create the output directory
