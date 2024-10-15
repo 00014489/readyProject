@@ -101,8 +101,8 @@ def check_and_match_input_song_folders(base_dir):
             used_ram_percentage = ram_usage.percent  # Get the percentage of used RAM
             logging.info(f"Now RAM usage is {used_ram_percentage}")
 
-            if used_ram_percentage > 69:
-                logging.warning("RAM usage exceeds 69%. Stopping the current task.")
+            if used_ram_percentage > 50:
+                logging.warning("RAM usage exceeds 50%. Stopping the current task.")
                 sys.exit()
                 # global task_running
                 # task_running = False  # Stop the task loop
