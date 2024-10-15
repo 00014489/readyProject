@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import psutil
 import shutil
 import re
@@ -12,13 +13,13 @@ import time
 logging.basicConfig(level=logging.INFO)
 
 # Global variable to control task execution
-task_running = True
+# task_running = True
 
 def run_task(base_dir):
-    global task_running
+    # global task_running
     
     delete_send_songs_folders(base_dir)
-    while task_running:
+    while True:
         logging.info("Running the scheduled task...")
 
         # First, delete all folders starting with "sendSongs"
@@ -93,22 +94,25 @@ def check_and_match_input_song_folders(base_dir):
     if found_matching_folders:
         for vocal_percentage, song_id, user_id, audio_file_path in found_matching_folders:
             time.sleep(10)
+            
             process_and_send_audio(vocal_percentage, song_id, user_id, audio_file_path)
+            # Check RAM usage
+            ram_usage = psutil.virtual_memory()
+            used_ram_percentage = ram_usage.percent  # Get the percentage of used RAM
+            logging.info(f"Now RAM usage is {used_ram_percentage}")
+
+            if used_ram_percentage > 69:
+                logging.warning("RAM usage exceeds 69%. Stopping the current task.")
+                sys.exit()
+                # global task_running
+                # task_running = False  # Stop the task loop
+                # return  # Exit the function to avoid processing audio files
     else:
         logging.info("No matching folders found for processing.")
 
 def process_and_send_audio(vocal_percentage, song_id, user_id, audio_file_path):
     print(f"song_id - {song_id}")
-    # Check RAM usage
-    ram_usage = psutil.virtual_memory()
-    used_ram_percentage = ram_usage.percent  # Get the percentage of used RAM
-    logging.info(f"Now RAM usage is {used_ram_percentage}")
-
-    if used_ram_percentage > 55:
-        logging.warning("RAM usage exceeds 55%. Stopping the current task.")
-        global task_running
-        task_running = False  # Stop the task loop
-        return  # Exit the function to avoid processing audio files
+    
     file_name = dataPostgres.get_file_name_by_id(song_id)
     print(f"song_name - {file_name}")
     process_audio_file(vocal_percentage, song_id, user_id)
