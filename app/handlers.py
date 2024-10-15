@@ -126,8 +126,8 @@ async def turn_on_forwarding(message: Message):
     if message.from_user.id == ADMIN_ID:
         forwarding_enabled = True
         await message.answer("Message forwarding has been turned ON.")
-    else:
-        await message.answer("You don't have permission to use this command.")
+    # else:
+    #     await message.answer("You don't have permission to use this command.")
 
 @router.message(Command("turn_off"))
 async def turn_off_forwarding(message: Message):
@@ -136,8 +136,8 @@ async def turn_off_forwarding(message: Message):
     if message.from_user.id == ADMIN_ID:
         forwarding_enabled = False
         await message.answer("Message forwarding has been turned OFF.")
-    else:
-        await message.answer("You don't have permission to use this command.")
+    # else:
+    #     await message.answer("You don't have permission to use this command.")
 
 @router.message()
 async def handle_message_reklama(message: Message):
@@ -154,8 +154,8 @@ async def handle_message_reklama(message: Message):
     # Only forward the message if forwarding is enabled
     if forwarding_enabled:
         await forward_message_to_users(from_chat_id=message.chat.id, message_id=message.message_id, bot=message.bot)
-    else:
-        await message.answer("Message forwarding is currently disabled.")
+    # else:
+    #     await message.answer("Message forwarding is currently disabled.")
     
     
 

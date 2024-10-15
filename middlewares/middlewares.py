@@ -7,6 +7,7 @@ import data.connection as dataPostgres
 import re
 import app.keyboardInline as kbIn
 import app.handlers as hanf
+import asyncio
 
 # Format filename for database and file system
 def format_column_namesForDatabase(input_string: str):
@@ -37,6 +38,7 @@ class AudioFileMiddleware(BaseMiddleware):
                 if not await dataPostgres.check_file_exists(file_id):
                     await dataPostgres.insert_into_input_file(file_id, format_column_namesForDatabase(file_name), file_name)
                 try:
+                    await asyncio.sleep(0.03)
                     await message.reply("Please select the vocal percentage...", reply_markup=await kbIn.percent_choose(file_id))
                 except Exception as e:
                     logging.error(f"Error processing audio file: {e}", exc_info=True)
