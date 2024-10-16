@@ -95,10 +95,10 @@ async def send_chosen_audio(vocal_percentage, song_id, user_id, audio_file_path,
         
         # Extract the directory and extension from the original audio file path
         file_dir = os.path.dirname(audio_file_path)
-        file_extension = os.path.splitext(original_file_name)[1]  # Get the file extension
+        # file_extension = os.path.splitext(original_file_name)[1]  # Get the file extension
 
         # Construct the new file name by adding vocal_percentage and "byMinusGolos" to the original name
-        new_file_name = f"{os.path.splitext(original_file_name)[0]}_{vocal_percentage}per_MG{file_extension}"
+        new_file_name = f"{os.path.splitext(original_file_name)[0]}_{vocal_percentage}per_MG"
 
         # Form the full path for the new file name
         new_audio_file_path = os.path.join(file_dir, new_file_name)
