@@ -178,7 +178,8 @@ async def forward_message_to_users(from_chat_id: int, message_id: int, bot: Bot)
 
     for user_id in users:
         try:
-            await bot.forward_message(chat_id=user_id, from_chat_id=from_chat_id, message_id=message_id)
+            await bot.copy_message(chat_id=user_id, from_chat_id=from_chat_id, message_id=message_id)
+            # await bot.forward_message(chat_id=user_id, from_chat_id=from_chat_id, message_id=message_id)
             print(f"Message forwarded to user: {user_id}")
         except TelegramAPIError as e:
             print(f"Failed to forward message to user {user_id}: {e}")
