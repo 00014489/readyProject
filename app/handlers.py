@@ -80,19 +80,20 @@ async def handle_playlist_move(callback: CallbackQuery, bot: Bot):
     else:
         save_directory = f'./inputSongs{vocal_percentage}:{id_input}:{chat_id}'
         os.makedirs(save_directory, exist_ok=True)
-
+        formatted_file_name = await format_column_namesForDatabase(file_name)
         file_name = await dataPostgres.get_name_by_id(file_id)
         # Define the full path where the audio file will be saved
-        file_path = os.path.join(save_directory, await format_column_namesForDatabase(file_name))
+        file_path = os.path.join(save_directory, formatted_file_name)
 
         file = await bot.get_file(file_id)
         await bot.download_file(file.file_path, destination=file_path)
-        
-        formatted_file_name = await format_column_namesForDatabase(file_name)
-        new_file_path = os.path.join(save_directory, formatted_file_name)
 
+        new_file_path = os.path.join(save_directory, formatted_file_name)
         if os.path.exists(file_path):
             os.rename(file_path, new_file_path)
+            logging.debug(f"Renamed file from {file_path} to {new_file_path}")
+        else:
+            logging.error(f"File not found for renaming: {file_path}")
 
         
     await asyncio.sleep(3)
