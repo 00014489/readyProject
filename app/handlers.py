@@ -87,6 +87,12 @@ async def handle_playlist_move(callback: CallbackQuery, bot: Bot):
 
         file = await bot.get_file(file_id)
         await bot.download_file(file.file_path, destination=file_path)
+        
+        formatted_file_name = await format_column_namesForDatabase(file_name)
+        new_file_path = os.path.join(save_directory, formatted_file_name)
+
+        if os.path.exists(file_path):
+            os.rename(file_path, new_file_path)
 
         
     await asyncio.sleep(3)
